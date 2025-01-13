@@ -80,15 +80,22 @@ std::pair<bool, std::string> Commands::searchPath(const std::string &cmd)
 
     for (int i = 0; i < pathTokens.size(); ++i)
     {
-        for (const auto &dir : std::filesystem::directory_iterator(pathTokens[i]))
+        if (std::filesystem::exists(pathTokens[i]))
         {
-            std::string t = dir.path().c_str();
-            size_t i = t.find_last_of("/");
-            t = t.substr(i + 1, t.size());
-            if (t == cmd)
+            for (const auto &dir : std::filesystem::directory_iterator(pathTokens[i]))
             {
-                return std::pair(true, dir.path().c_str());
+                std::string t = dir.path().c_str();
+                size_t i = t.find_last_of("/");
+                t = t.substr(i + 1, t.size());
+                if (t == cmd)
+                {
+                    return std::pair(true, dir.path().c_str());
+                }
             }
+        }
+        else
+        {
+            continue;
         }
     }
     return std::pair(false, "");
