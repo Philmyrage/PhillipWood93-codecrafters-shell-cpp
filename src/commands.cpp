@@ -94,8 +94,11 @@ std::pair<bool, std::string> Commands::searchPath(const std::string &cmd)
     return std::pair(false, "");
 }
 
-void Commands::processCommand(const std::vector<std::string> &tokens)
+void Commands::processCommand(const std::string &str)
 {
+    std::vector<std::string> tokens;
+    tokenizeString(tokens, str);
+
     if (validCommand(tokens[0]))
     {
         if (tokens[0] == "exit")
@@ -133,27 +136,6 @@ void Commands::processCommand(const std::vector<std::string> &tokens)
     }
     else if (searchPath(tokens[0]).first) // if its a command in the path.
     {
-        // pid_t pid = fork();
-        // if (pid == -1)
-        // {
-        //     std::cerr << "Error, could not create fork." << std::endl;
-        //     return;
-        // }
-        // if (pid == 0)
-        // {
-        //     char *argv[tokens.size()];
-        //     for (int i = 0; i <= tokens.size(); ++i)
-        //     {
-        //         argv[i] = const_cast<char *>(tokens[i].c_str());
-        //     }
-        //     argv[tokens.size()] = nullptr;
-        //     execv(searchPath(tokens[0]).second.c_str(), argv);
-        //     std::cerr << "Error: exec failed!" << std::endl;
-        //     exit(1);
-        //     return;
-        // }
-        // waitpid(pid, NULL, 0);
-
         pid_t pid = fork();
         if (pid == -1)
         {
