@@ -49,6 +49,10 @@ void Commands::changeDirectory(const std::vector<std::string> &inTokens)
     {
         std::filesystem::current_path(inTokens[1]);
     }
+    else if (inTokens[1] == "~")
+    {
+        std::filesystem::current_path(std::getenv("HOME"));
+    }
     else
     {
         std::cerr << "cd: " << inTokens[1] << ": No such file or directory" << std::endl;
