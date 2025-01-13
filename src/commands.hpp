@@ -10,7 +10,7 @@ public:
     void tokenizeString(std::vector<std::string> &outTokens, const std::string &str);
 
 private:
-    std::vector<std::string> commands = {"exit", "echo", "type", "pwd"};
+    std::vector<std::string> commands = {"exit", "echo", "type", "pwd", "cd"};
 
     // Helper Functions
     const bool validCommand(const std::string &cmd);
@@ -19,4 +19,5 @@ private:
 
     // Implemented builtin Command Functions..
     const void echo(const std::vector<std::string> &tokens);
+    void changeDirectory(const std::vector<std::string> &inTokens);
 };

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <cstdlib>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -40,6 +41,18 @@ const void Commands::echo(const std::vector<std::string> &tokens)
         temp += tokens[i] + " ";
     }
     std::cout << temp << std::endl;
+}
+
+void Commands::changeDirectory(const std::vector<std::string> &inTokens)
+{
+    if (std::filesystem::exists(inTokens[1]))
+    {
+        std::filesystem::current_path(inTokens[1]);
+    }
+    else
+    {
+        std::cerr << "cd: " << inTokens[1] << ": No such file or directory" << std::endl;
+    }
 }
 
 void Commands::splitString(std::vector<std::string> &outTokens, const std::string &str, const char &delimiter)
@@ -113,9 +126,34 @@ void Commands::processCommand(const std::vector<std::string> &tokens)
         {
             std::cout << std::filesystem::current_path().string() << std::endl;
         }
+        else if (tokens[0] == "cd")
+        {
+            changeDirectory(tokens);
+        }
     }
     else if (searchPath(tokens[0]).first) // if its a command in the path.
     {
+        // pid_t pid = fork();
+        // if (pid == -1)
+        // {
+        //     std::cerr << "Error, could not create fork." << std::endl;
+        //     return;
+        // }
+        // if (pid == 0)
+        // {
+        //     char *argv[tokens.size()];
+        //     for (int i = 0; i <= tokens.size(); ++i)
+        //     {
+        //         argv[i] = const_cast<char *>(tokens[i].c_str());
+        //     }
+        //     argv[tokens.size()] = nullptr;
+        //     execv(searchPath(tokens[0]).second.c_str(), argv);
+        //     std::cerr << "Error: exec failed!" << std::endl;
+        //     exit(1);
+        //     return;
+        // }
+        // waitpid(pid, NULL, 0);
+
         pid_t pid = fork();
         if (pid == -1)
         {
@@ -124,17 +162,26 @@ void Commands::processCommand(const std::vector<std::string> &tokens)
         }
         if (pid == 0)
         {
-            char *argv[tokens.size()];
-            for (int i = 0; i <= tokens.size(); ++i)
+            std::string path = searchPath(tokens[0]).second;
+            char *argv[tokens.size() + 1];
+            for (int i = 0; i < tokens.size(); ++i)
             {
                 argv[i] = const_cast<char *>(tokens[i].c_str());
             }
             argv[tokens.size()] = nullptr;
-            execvp(tokens[0].c_str(), argv);
+
+            int fd = open("/dev/null", O_RDWR);
+            dup2(fd, STDERR_FILENO);
+            close(fd);
+
+            execv(path.c_str(), argv);
             std::cerr << "Error: exec failed!" << std::endl;
             kill(pid, 1);
         }
-        waitpid(pid, NULL, 0);
+        else
+        {
+            waitpid(pid, NULL, 0);
+        }
     }
     else
     {

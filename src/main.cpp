@@ -177,11 +177,11 @@ int main()
     std::getline(std::cin, input);
 
     std::vector<std::string> tokens;
-    // cmdHandler->tokenizeString(tokens, input);
-    // cmdHandler->processCommand(tokens);
+    cmdHandler->tokenizeString(tokens, input);
+    cmdHandler->processCommand(tokens);
 
-    tokenizeString(tokens, input);
-    processCommand(tokens);
+    // tokenizeString(tokens, input);
+    // processCommand(tokens);
 
   } while (input != "");
 }
