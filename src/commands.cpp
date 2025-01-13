@@ -116,11 +116,6 @@ void Commands::processCommand(const std::vector<std::string> &tokens)
     }
     else if (searchPath(tokens[0]).first) // if its a command in the path.
     {
-        char *argv[tokens.size()];
-        for (int i = 0; i < tokens.size(); ++i)
-        {
-            argv[i] = const_cast<char *>(tokens[i].c_str());
-        }
         pid_t pid = fork();
         if (pid == -1)
         {
@@ -129,6 +124,12 @@ void Commands::processCommand(const std::vector<std::string> &tokens)
         }
         if (pid == 0)
         {
+            char *argv[tokens.size()];
+            for (int i = 0; i <= tokens.size(); ++i)
+            {
+                argv[i] = const_cast<char *>(tokens[i].c_str());
+            }
+            argv[tokens.size()] = nullptr;
             execvp(tokens[0].c_str(), argv);
             std::cerr << "Error: exec failed!" << std::endl;
             kill(pid, 1);
