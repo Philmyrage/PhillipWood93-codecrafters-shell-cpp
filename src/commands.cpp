@@ -33,14 +33,22 @@ void Commands::tokenizeString(std::vector<std::string> &outTokens, const std::st
     }
 }
 
+// refactor to take a string and tokenize if required.
 const void Commands::echo(const std::vector<std::string> &tokens)
 {
-    std::string temp = "";
-    for (int i = 1; i < tokens.size(); ++i)
+    if (quote.length() > 0)
     {
-        temp += tokens[i] + " ";
+        std::cout << quote << std::endl;
     }
-    std::cout << temp << std::endl;
+    else
+    {
+        std::string temp = "";
+        for (int i = 1; i < tokens.size(); ++i)
+        {
+            temp += tokens[i] + " ";
+        }
+        std::cout << temp << std::endl;
+    }
 }
 
 void Commands::changeDirectory(const std::vector<std::string> &inTokens)
@@ -107,8 +115,24 @@ std::pair<bool, std::string> Commands::searchPath(const std::string &cmd)
 
 void Commands::processCommand(const std::string &str)
 {
+    // check if str ' and ends '.
+    quote.clear();
+
     std::vector<std::string> tokens;
     tokenizeString(tokens, str);
+    if (str.ends_with("'"))
+    {
+        std::string t = "";
+        quote = str.substr(str.find_first_of("'"), str.find_last_of("'"));
+        for (int i = 0; i < quote.length(); ++i)
+        {
+            if (quote[i] != '\'')
+            {
+                t += quote[i];
+            }
+        }
+        quote = t;
+    }
 
     if (validCommand(tokens[0]))
     {
