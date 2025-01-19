@@ -179,6 +179,7 @@ void Commands::processCommand(const std::string &str)
         }
         if (pid == 0)
         {
+            // TODO: Use the quote string if quotes were used instead of tokens.
             std::string path = searchPath(tokens[0]).second;
             char *argv[tokens.size() + 1];
             for (int i = 0; i < tokens.size(); ++i)
