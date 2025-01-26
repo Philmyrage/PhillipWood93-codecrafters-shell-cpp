@@ -10,7 +10,6 @@ public:
 
 private:
     std::vector<std::string> commands = {"exit", "echo", "type", "pwd", "cd"};
-    std::string quote = "";
 
     // Helper Functions
     const bool validCommand(const std::string &cmd);

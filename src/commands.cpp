@@ -25,30 +25,59 @@ void Commands::tokenizeString(std::vector<std::string> &outTokens, const std::st
 {
     outTokens.clear();
 
+    // get the commands not in quotes...
     std::stringstream inputStream(str);
     std::string temp;
     while (inputStream >> temp)
     {
-        outTokens.push_back(temp);
+        if (temp.find("\'") == std::string::npos)
+        {
+            outTokens.push_back(temp);
+        }
     }
+    // if there is a quote mark inside string iterate it until no quotes are left to tokenize...
+    // start at the character after the first ' create string until the next ';
+    std::string tStr(str);
+    std::string workingString = tStr;
+    do
+    {
+        //  if no quote end the loop...
+        if (workingString.find("'") == std::string::npos)
+            break;
+
+        // created for the soul purpose of tokenizing quotes inside a string...
+        std::string token = "";
+        // after loop is over remove the token from the string somehow.
+        for (int i = workingString.find("'") + 1; i < workingString.length(); ++i)
+        {
+            // if we hit the end of the quote do necessary work end the loop...
+            if (workingString[i] == '\'')
+            {
+                // add the tokenized quote to the outTokens
+                outTokens.push_back(token);
+                // remove previous quote from the string so we don't re-tokenize it.
+                tStr = tStr.substr(i + 1);
+                break;
+            }
+            else
+            {
+                token += workingString[i];
+            }
+        }
+        // set the working string to the remainder of the string before checking if need to iterate again.
+        workingString = tStr;
+    } while (workingString.find("'") != std::string::npos);
 }
 
 // refactor to take a string and tokenize if required.
 const void Commands::echo(const std::vector<std::string> &tokens)
 {
-    if (quote.length() > 0)
+    std::string temp = "";
+    for (int i = 1; i < tokens.size(); ++i)
     {
-        std::cout << quote << std::endl;
+        temp += tokens[i] + " ";
     }
-    else
-    {
-        std::string temp = "";
-        for (int i = 1; i < tokens.size(); ++i)
-        {
-            temp += tokens[i] + " ";
-        }
-        std::cout << temp << std::endl;
-    }
+    std::cout << temp << std::endl;
 }
 
 void Commands::changeDirectory(const std::vector<std::string> &inTokens)
@@ -115,24 +144,14 @@ std::pair<bool, std::string> Commands::searchPath(const std::string &cmd)
 
 void Commands::processCommand(const std::string &str)
 {
-    // check if str ' and ends '.
-    quote.clear();
-
     std::vector<std::string> tokens;
     tokenizeString(tokens, str);
-    if (str.ends_with("'"))
-    {
-        std::string t = "";
-        quote = str.substr(str.find_first_of("'"), str.find_last_of("'"));
-        for (int i = 0; i < quote.length(); ++i)
-        {
-            if (quote[i] != '\'')
-            {
-                t += quote[i];
-            }
-        }
-        quote = t;
-    }
+
+    // A debug output to test tokens....
+    //  for (int i = 0; i < tokens.size(); ++i)
+    //  {
+    //      std::cout << tokens[i] + ": 1" << std::endl;
+    //  }
 
     if (validCommand(tokens[0]))
     {
@@ -179,7 +198,6 @@ void Commands::processCommand(const std::string &str)
         }
         if (pid == 0)
         {
-            // TODO: Use the quote string if quotes were used instead of tokens.
             std::string path = searchPath(tokens[0]).second;
             char *argv[tokens.size() + 1];
             for (int i = 0; i < tokens.size(); ++i)
