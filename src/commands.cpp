@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <regex>
 
 const bool Commands::validCommand(const std::string &cmd)
 {
@@ -25,48 +26,43 @@ void Commands::tokenizeString(std::vector<std::string> &outTokens, const std::st
 {
     outTokens.clear();
 
+    std::string temp;
     // get the commands not in quotes...
     std::stringstream inputStream(str);
-    std::string temp;
     while (inputStream >> temp)
     {
-        if (temp.find("\'") == std::string::npos)
+        if (temp.find('\'') == std::string::npos)
         {
             outTokens.push_back(temp);
         }
     }
-    // if there is a quote mark inside string iterate it until no quotes are left to tokenize...
-    // start at the character after the first ' create string until the next ';
-    std::string tStr(str);
-    std::string workingString = tStr;
-    do
+    // if the first token is echo do some special hacky stuff...
+    if (outTokens.size() == 1 && outTokens[0] == "echo")
     {
-        //  if no quote end the loop...
-        if (workingString.find("'") == std::string::npos)
-            break;
-
-        // created for the soul purpose of tokenizing quotes inside a string...
-        std::string token = "";
-        // after loop is over remove the token from the string somehow.
-        for (int i = workingString.find("'") + 1; i < workingString.length(); ++i)
+        // construct the echo token string
+        std::string tok = str.substr(6, str.size() - 7);
+        std::string t;
+        for (int i = 0; i < tok.size(); ++i)
         {
-            // if we hit the end of the quote do necessary work end the loop...
-            if (workingString[i] == '\'')
+            if (tok[i] != '\'')
             {
-                // add the tokenized quote to the outTokens
-                outTokens.push_back(token);
-                // remove previous quote from the string so we don't re-tokenize it.
-                tStr = tStr.substr(i + 1);
-                break;
-            }
-            else
-            {
-                token += workingString[i];
+                t += tok[i];
             }
         }
-        // set the working string to the remainder of the string before checking if need to iterate again.
-        workingString = tStr;
-    } while (workingString.find("'") != std::string::npos);
+        outTokens.push_back(t);
+
+        // return so we dont create more tokens later in the function.
+        return;
+    }
+
+    // get the tokens inside quotes.
+    std::regex pattern("'([^']*)'");
+    std::sregex_token_iterator iter(str.begin(), str.end(), pattern, 1);
+    std::sregex_token_iterator end;
+    for (; iter != end; ++iter)
+    {
+        outTokens.push_back(*iter);
+    }
 }
 
 // refactor to take a string and tokenize if required.
